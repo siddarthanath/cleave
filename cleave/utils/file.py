@@ -1,7 +1,8 @@
 # ───────────────────────────────────────────────────── Imports ────────────────────────────────────────────────────── #
 
 # Standard Library
-from pathlib import Path, Tuple
+from pathlib import Path
+from typing import Tuple
 
 # Third Party Library
 from abc import ABC, abstractmethod
