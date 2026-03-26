@@ -20,5 +20,5 @@ def get_path_and_extension(path: str) -> Tuple[str, Path]:
         str: Extension.
     """
     path_ = Path(path)
-    ext = path.suffix.lower()
+    ext = path_.suffix.lower()
     return path_, ext
