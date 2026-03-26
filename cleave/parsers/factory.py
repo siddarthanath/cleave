@@ -29,8 +29,10 @@ class ParserFactory:
             BaseParser: Parser object.
         """        
         if input_path.startswith("http://") or input_path.startswith("https://"):
-            source = BaseParser._make_url_source(url=input_path)
-            return HtmlParser(source=source)
+            # source = BaseParser._make_url_source(url=input_path)
+            # return HtmlParser(source=source)
+            raise NotImplementedError("Implemented once parsers are ready.")
+        
         _, ext = get_path_and_extension(path=input_path)
         if ext not in cls._PARSER_REGISTRY:
             raise ValueError(f"Unsupported extension '{ext}'. Supported: {list(cls._PARSER_REGISTRY.keys())}")
