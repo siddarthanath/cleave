@@ -2,7 +2,7 @@
 
 # Standard Library
 from enum import Enum
-from typing import List, Optional
+from typing import List
 
 # Third Party Library
 from pydantic import BaseModel, Field
@@ -27,7 +27,6 @@ class Source(BaseModel):
     name: str = Field(description="Human-readable label e.g. filename or domain.", min_length=1)
     location: str = Field(description="Absolute filepath or full URL.", min_length=1)
 
-
 # Content
 
 class ContentType(str, Enum):
@@ -51,7 +50,7 @@ class DocumentPage(BaseModel):
     page_number: int | None = Field(description="1-based page number. None for sources with no page concept (txt, url, docx).",
                                     ge=1,
                                     default=None,)
-    blocks: list[ContentBlock] = Field(description="Ordered content blocks that make up this page.",
+    blocks: List[ContentBlock] = Field(description="Ordered content blocks that make up this page.",
                                        min_length=0,)
 
     @property
@@ -63,16 +62,16 @@ class DocumentPage(BaseModel):
         )
 
     @property
-    def images(self) -> list[ContentBlock]:
+    def images(self) -> List[ContentBlock]:
         return [b for b in self.blocks if b.type == ContentType.image]
 
     @property
-    def tables(self) -> list[ContentBlock]:
+    def tables(self) -> List[ContentBlock]:
         return [b for b in self.blocks if b.type == ContentType.table]
 
 class Document(BaseModel):
     source: Source = Field(description="Origin of this document.")
-    pages: list[DocumentPage] = Field(description="Ordered list of pages.", min_length=1)
+    pages: List[DocumentPage] = Field(description="Ordered List of pages.", min_length=1)
     total_pages: int = Field(description="Total number of pages in the document.", ge=1)
 
     @property
@@ -80,11 +79,11 @@ class Document(BaseModel):
         return "\n".join(page.text for page in self.pages)
 
     @property
-    def all_images(self) -> list[ContentBlock]:
+    def all_images(self) -> List[ContentBlock]:
         return [block for page in self.pages for block in page.images]
 
     @property
-    def all_tables(self) -> list[ContentBlock]:
+    def all_tables(self) -> List[ContentBlock]:
         return [block for page in self.pages for block in page.tables]
 
 # Embeddings
@@ -101,4 +100,4 @@ class Chunk(BaseModel):
 
 class EmbeddedChunk(BaseModel):
     chunk: Chunk = Field(description="The original chunk this embedding was generated from.")
-    embedding: list[float] = Field(description="Dense vector representation of the chunk text.", min_length=1)
+    embedding: List[float] = Field(description="Dense vector representation of the chunk text.", min_length=1)
