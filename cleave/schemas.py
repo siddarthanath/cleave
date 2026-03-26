@@ -27,7 +27,6 @@ class Source(BaseModel):
     name: str = Field(description="Human-readable label e.g. filename or domain.", min_length=1)
     location: str = Field(description="Absolute filepath or full URL.", min_length=1)
 
-
 # Content
 
 class ContentType(str, Enum):
