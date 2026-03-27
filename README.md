@@ -183,7 +183,7 @@ If you use Cleave in your work, please cite:
 ```text
 @software{cleave2026,
   author = {Siddartha Nath},
-  title = {Cleave: A Minimal Unified Python Pipeline for Document Parsing, Chunking, Embedding and Retrieval},
+  title = {Cleave: A Minimal Unified Python Interface for Document Parsing, Chunking, Embedding and Retrieval},
   year = {2026},
   url = {https://github.com/siddarthanath/cleave}
 }
