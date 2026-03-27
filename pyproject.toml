@@ -26,7 +26,7 @@ pinecone  = ["pinecone-client"]
 openai    = ["openai"]
 anthropic = ["anthropic"]
 google    = ["google-genai"]
-dev       = ["pytest>=7.0", "pytest-asyncio"]
+dev       = ["pytest>=7.0", "pytest-cov", "pytest-asyncio"]
 all       = [
     "cleave[pdf,docx,pptx,html,markdown,chroma,sqlite,pinecone,openai,anthropic,google]"
 ]
