@@ -15,7 +15,7 @@ from cleave.utils.file import get_path_and_extension
 class ParserFactory:
     
     _PARSER_REGISTRY : Dict[str, str] = {'.pdf': ...,
-                                        '.docx': ...}
+                                         '.docx': ...}
 
     @classmethod
     def create(cls, input_path: str) -> BaseParser:
