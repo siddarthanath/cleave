@@ -5,20 +5,19 @@ from pathlib import Path
 from typing import Tuple
 
 # Third Party Library
-from abc import ABC, abstractmethod
 
 # Private Library
 
 # ────────────────────────────────────────────────────── Code ──────────────────────────────────────────────────────── #
 
-def get_path_and_extension(path: str) -> Tuple[str, Path]:
-    """This function gets the file extension of a path to create a Source.
-
+def get_path_and_extension(path: str) -> Tuple[Path, str]:
+    """This function gets the file path object and extension from a path string.
+    
     Args:
         path (str): File path (local).
-
+    
     Returns:
-        str: Extension.
+        Tuple[Path, str]: A tuple containing the Path object and the file extension.
     """
     path_ = Path(path)
     ext = path_.suffix.lower()
