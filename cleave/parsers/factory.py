@@ -2,10 +2,8 @@
 
 # Standard Library
 from typing import Dict
-from pathlib import Path
 
 # Third Party Library
-from abc import ABC, abstractmethod
 
 # Private Library
 from cleave.parsers.base import BaseParser
