@@ -168,8 +168,8 @@ embedded = embedder.embed(chunks)
 
 | Version | Feature | Status 
 |:---:|:---| :---|
-| v1 | Parse, chunk, embed, store, retrieve | ✓
-| v2 | Hybrid retrieval (semantic + BM25 combined) | ✗
+| v1 | Parse, chunk, embed, store, retrieve (text only) | ✓
+| v2 | Image & Table handling with hybrid retrieval (semantic + BM25 combined) | ✗
 | v3 | Vision embeddings for image blocks | ✗
 | v4 | Table-aware chunking | ✗
 | v5 | CLI + Streamlit interface | ✗

@@ -5,7 +5,7 @@ from enum import Enum
 from typing import List
 
 # Third Party Library
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 # Private Library
 
@@ -88,13 +88,36 @@ class Document(BaseModel):
 
 # Embeddings
 
+class ChunkerType(str, Enum):
+    fixed = "fixed"
+    sentence = "sentence"
+    recursive = "recursive"
+    semantic = "semantic"
+
+class ChunkUnit(str, Enum):
+    characters = "characters"
+    tokens     = "tokens"
+
+class ChunkParams(BaseModel):
+    chunk_size: int = Field(description="The length of each chunk of text", gt=0)
+    chunk_overlap: int = Field(description="The length that each nearby chunks share text.", ge=0)
+    unit: ChunkUnit = ChunkUnit.characters
+
+    @model_validator(mode="after")
+    def _validate(self):
+        if self.chunk_overlap <= 0:
+            raise ValueError("chunk_overlap must be > 0")
+        if self.chunk_overlap >= self.chunk_size:
+            raise ValueError("chunk_overlap must be < chunk_size")
+        return self
+
 class Chunk(BaseModel):
     text: str = Field(description="The chunk text content.", min_length=1)
     source: Source = Field(description="Origin document this chunk was derived from.")
     page_number: int | None = Field(description="Page this chunk came from. None if source has no page concept.", ge=1, default=None)
     content_type: ContentType = Field(description="Type of content this chunk represents.")
     index: int = Field(description="0-based position of this chunk across the whole document.", ge=0)
-    token_count: int = Field(description="Token count computed via tiktoken cl100k_base.", ge=1)
+    token_count: int = Field(description="Token count computed via tiktoken cl100k_base.", ge=0)
     char_start: int = Field(description="Start character offset within the page text.", ge=0)
     char_end: int = Field(description="End character offset within the page text.", ge=1)
 

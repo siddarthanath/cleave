@@ -23,6 +23,7 @@ class ParserFactory:
 
         Args:
             input_path (str): File path to local document or URL.
+            
         Returns:
             BaseParser: Parser object.
         """        

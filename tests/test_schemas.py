@@ -200,9 +200,8 @@ class TestChunk:
         with pytest.raises(ValidationError):
             _chunk(text="")
 
-    def test_token_count_zero_invalid(self):
-        with pytest.raises(ValidationError):
-            _chunk(token_count=0)
+    def test_token_count_zero_valid(self):
+        assert _chunk(token_count=0).token_count == 0
 
     def test_negative_index_invalid(self):
         with pytest.raises(ValidationError):
