@@ -9,30 +9,51 @@ description = "A minimal unified Python interface for document parsing, chunking
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
+
+authors = [
+    { name = "Siddartha Nath" }
+]
+
+keywords = ["parse", "chunk", "embed", "retrieve", "rag"]
+
 dependencies = [
     "pydantic>=2.0",
     "tiktoken",
 ]
 
 [project.optional-dependencies]
-pdf       = ["pymupdf"]
-docx      = ["python-docx"]
-pptx      = ["python-pptx"]
-html      = ["beautifulsoup4", "httpx"]
-markdown  = ["markdown", "beautifulsoup4"]
-chroma    = ["chromadb"]
-sqlite    = ["sqlite-vec"]
-pinecone  = ["pinecone-client"]
-openai    = ["openai"]
+pdf = ["pymupdf"]
+docx = ["python-docx"]
+pptx = ["python-pptx"]
+html = ["beautifulsoup4", "httpx"]
+markdown = ["markdown", "beautifulsoup4"]
+chroma = ["chromadb"]
+sqlite = ["sqlite-vec"]
+pinecone = ["pinecone-client"]
+openai = ["openai"]
 anthropic = ["anthropic"]
-google    = ["google-genai"]
-dev       = ["pytest>=7.0", "pytest-cov", "pytest-asyncio"]
-all       = [
-    "cleave[pdf,docx,pptx,html,markdown,chroma,sqlite,pinecone,openai,anthropic,google]"
+google = ["google-genai"]
+dev = ["pytest>=7.0", "pytest-cov", "pytest-asyncio"]
+all = [
+    "pymupdf",
+    "python-docx",
+    "python-pptx",
+    "beautifulsoup4",
+    "httpx",
+    "markdown",
+    "chromadb",
+    "sqlite-vec",
+    "pinecone-client",
+    "openai",
+    "anthropic",
+    "google-genai",
 ]
 
 [project.scripts]
 cleave = "cleave.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/siddarthanath/cleave"
 
 [tool.hatch.build.targets.wheel]
 packages = ["cleave"]
