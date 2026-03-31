@@ -21,7 +21,7 @@ from cleave.schemas import (
     SourceType,
 )
 
-# ────────────────────────────────────────────────────── Helpers ───────────────────────────────────────────────────── #
+# ────────────────────────────────────────────────────── Code ──────────────────────────────────────────────────────── #
 
 FIXTURES_DIR = pathlib.Path(__file__).parent / "fixtures"
 
@@ -33,27 +33,21 @@ class DummyChunker(BaseChunker):
         return []
 
 
-# ─────────────────────────────────────────────────── Fixtures ─────────────────────────────────────────────────────── #
-
 @pytest.fixture
 def sample_text() -> str:
     return (FIXTURES_DIR / "sample.txt").read_text(encoding="utf-8")
-
 
 @pytest.fixture
 def source() -> Source:
     return Source(type=SourceType.txt, name="sample.txt", location="/tmp/sample.txt")
 
-
 @pytest.fixture
 def char_params() -> ChunkParams:
     return ChunkParams(chunk_size=50, chunk_overlap=10)
 
-
 @pytest.fixture
 def token_params() -> ChunkParams:
     return ChunkParams(chunk_size=10, chunk_overlap=2, unit=ChunkUnit.tokens)
-
 
 @pytest.fixture
 def sample_document(source, sample_text) -> Document:
@@ -63,7 +57,6 @@ def sample_document(source, sample_text) -> Document:
         blocks=[ContentBlock(type=ContentType.text, content=sample_text, position=0)],
     )
     return Document(source=source, pages=[page], total_pages=1)
-
 
 @pytest.fixture
 def multipage_document(source) -> Document:

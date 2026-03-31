@@ -1,21 +1,15 @@
 # ───────────────────────────────────────────────────── Imports ────────────────────────────────────────────────────── #
 
 # Standard Library
-from typing import List
 
 # Third Party Library
 import pytest
 
 # Private Library
-from cleave.chunker.base import BaseChunker
-from cleave.schemas import Chunk, ContentType, Document
+from cleave.schemas import ContentType
+from tests.chunkers.conftest import DummyChunker
 
 # ────────────────────────────────────────────────────── Code ──────────────────────────────────────────────────────── #
-
-class DummyChunker(BaseChunker):
-    def chunk(self, document: Document) -> List[Chunk]:
-        return []
-
 
 class TestMeasure:
     def test_characters_mode_returns_string_length(self, dummy_chunker):
@@ -28,7 +22,6 @@ class TestMeasure:
 
     def test_empty_string_characters(self, dummy_chunker):
         assert dummy_chunker._measure("") == 0
-
 
 class TestCountTokens:
     def test_non_empty_string_returns_positive_count(self, dummy_chunker):
@@ -44,7 +37,6 @@ class TestCountTokens:
 
     def test_sample_text_token_count(self, dummy_chunker, sample_text):
         assert dummy_chunker._count_tokens(sample_text) > 0
-
 
 class TestMakeChunk:
     def test_text_chunk_fields(self, dummy_chunker, source):

@@ -6,6 +6,13 @@ from cleave.schemas import ChunkParams, ContentBlock, ContentType, DocumentPage,
 
 # ────────────────────────────────────────────────────── Code ──────────────────────────────────────────────────────── #
 
+def _doc(source, text: str, page_number: int | None = 1) -> Document:
+    page = DocumentPage(
+        page_number=page_number,
+        blocks=[ContentBlock(type=ContentType.text, content=text, position=0)],
+    )
+    return Document(source=source, pages=[page], total_pages=1)
+
 class TestFixedChunkerCharacters:
     def test_single_chunk_when_text_fits(self, source):
         params = ChunkParams(chunk_size=100, chunk_overlap=10)
@@ -119,13 +126,3 @@ class TestFixedChunkerTokens:
         chunks = chunker.chunk(doc)
         for i, chunk in enumerate(chunks):
             assert chunk.index == i
-
-
-# ───────────────────────────────────────────────────── Helpers ────────────────────────────────────────────────────── #
-
-def _doc(source, text: str, page_number: int | None = 1) -> Document:
-    page = DocumentPage(
-        page_number=page_number,
-        blocks=[ContentBlock(type=ContentType.text, content=text, position=0)],
-    )
-    return Document(source=source, pages=[page], total_pages=1)
