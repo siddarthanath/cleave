@@ -11,6 +11,8 @@ from pydantic import BaseModel, Field, model_validator
 
 # ────────────────────────────────────────────────────── Code ──────────────────────────────────────────────────────── #
 
+# TODO: Split this into a folder structure.
+
 # Source 
 
 class SourceType(str, Enum):

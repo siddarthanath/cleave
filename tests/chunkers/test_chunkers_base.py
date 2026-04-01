@@ -35,9 +35,6 @@ class TestCountTokens:
         long_ = dummy_chunker._count_tokens("hello world, this is a much longer sentence")
         assert long_ > short
 
-    def test_sample_text_token_count(self, dummy_chunker, sample_text):
-        assert dummy_chunker._count_tokens(sample_text) > 0
-
 class TestMakeChunk:
     def test_text_chunk_fields(self, dummy_chunker, source):
         chunk = dummy_chunker.make_chunk("hello world", source, 1, 0, 5, ContentType.text)

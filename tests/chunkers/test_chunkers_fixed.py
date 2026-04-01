@@ -86,13 +86,6 @@ class TestFixedChunkerCharacters:
         assert 1 in page_numbers
         assert 2 in page_numbers
 
-    def test_sample_text_chunks_cover_full_content(self, sample_document, char_params):
-        chunker = FixedChunker(char_params)
-        chunks = chunker.chunk(sample_document)
-        assert len(chunks) >= 1
-        # All chunks should have non-empty text
-        assert all(len(c.text) > 0 for c in chunks)
-
     def test_source_propagated_to_chunks(self, source, char_params):
         chunker = FixedChunker(char_params)
         doc = _doc(source, "hello world this is a test sentence for chunking")

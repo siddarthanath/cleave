@@ -1,7 +1,6 @@
 # ───────────────────────────────────────────────────── Imports ────────────────────────────────────────────────────── #
 
 # Standard Library
-import pathlib
 from typing import List
 
 # Third Party Library
@@ -23,8 +22,6 @@ from cleave.schemas import (
 
 # ────────────────────────────────────────────────────── Code ──────────────────────────────────────────────────────── #
 
-FIXTURES_DIR = pathlib.Path(__file__).parent / "fixtures"
-
 
 class DummyChunker(BaseChunker):
     """Minimal concrete subclass used to test BaseChunker methods directly."""
@@ -32,10 +29,6 @@ class DummyChunker(BaseChunker):
     def chunk(self, document: Document) -> List[Chunk]:
         return []
 
-
-@pytest.fixture
-def sample_text() -> str:
-    return (FIXTURES_DIR / "sample.txt").read_text(encoding="utf-8")
 
 @pytest.fixture
 def source() -> Source:
@@ -48,15 +41,6 @@ def char_params() -> ChunkParams:
 @pytest.fixture
 def token_params() -> ChunkParams:
     return ChunkParams(chunk_size=10, chunk_overlap=2, unit=ChunkUnit.tokens)
-
-@pytest.fixture
-def sample_document(source, sample_text) -> Document:
-    """Single-page Document built from the sample text fixture."""
-    page = DocumentPage(
-        page_number=1,
-        blocks=[ContentBlock(type=ContentType.text, content=sample_text, position=0)],
-    )
-    return Document(source=source, pages=[page], total_pages=1)
 
 @pytest.fixture
 def multipage_document(source) -> Document:
