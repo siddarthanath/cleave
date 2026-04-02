@@ -150,6 +150,21 @@ class TestSentenceChunkerCharacters:
         # Spare text ". Unfinished" is prepended to page 2 — chunker must produce at least one chunk
         assert len(chunks) >= 1
 
+    def test_multiline_text_produces_chunks(self, source):
+        # Regression: re.search without re.DOTALL matched the first '.' whose line had no
+        # further punctuation, truncating page_text to a punctuation-free prefix and yielding 0 chunks.
+        params = ChunkParams(chunk_size=150, chunk_overlap=20)
+        chunker = SentenceChunker(params)
+        text = (
+            "Chunking is the process of splitting a long document into smaller, overlapping pieces\n"
+            "so that each piece fits within the context window of a language model. The overlap\n"
+            "ensures that no information is lost at the boundary between two adjacent chunks -\n"
+            "a sentence or phrase that straddles a boundary will appear in both neighbours. Why should\n"
+            "we apply chunking? It is because without chunking, we explode our context window!\n"
+        )
+        chunks = chunker.chunk(_doc(source, text))
+        assert len(chunks) >= 1
+
 class TestSentenceChunkerTokens:
     def test_produces_chunks_in_token_mode(self, source, token_params):
         chunker = SentenceChunker(token_params)

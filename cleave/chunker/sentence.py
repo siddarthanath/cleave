@@ -43,7 +43,7 @@ class SentenceChunker(BaseChunker):
             # Reset spare text to avoid carry over old text
             spare_text = None
             # Check the most recent punctuation stopper
-            match = re.search(r"[.!?](?!.*[.!?])", page_text)
+            match = re.search(r"[.!?](?!.*[.!?])", page_text, re.DOTALL)
             if match:
                 # Hold the spare text to join onto next page if mid sentence
                 punc_index = match.start()
