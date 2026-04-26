@@ -7,14 +7,20 @@ from typing import Dict
 
 # Private Library
 from cleave.chunker.base import BaseChunker
+from cleave.chunker.fixed import FixedChunker
+from cleave.chunker.recursive import RecursiveChunker
+from cleave.chunker.sentence import SentenceChunker
 from cleave.schemas import ChunkParams, ChunkerType
 
 # ────────────────────────────────────────────────────── Code ──────────────────────────────────────────────────────── #
 
 class ChunkerFactory:
-    
-    _CHUNKER_REGISTRY : Dict[ChunkerType, type[BaseChunker]] = {ChunkerType.fixed: ...,
-                                                                ChunkerType.recursive: ...}
+
+    _CHUNKER_REGISTRY: Dict[ChunkerType, type[BaseChunker]] = {
+        ChunkerType.fixed: FixedChunker,
+        ChunkerType.sentence: SentenceChunker,
+        ChunkerType.recursive: RecursiveChunker,
+    }
 
     @classmethod
     def create(cls, chunk_type: ChunkerType, chunk_params: ChunkParams) -> BaseChunker:

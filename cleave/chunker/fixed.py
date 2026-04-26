@@ -13,8 +13,6 @@ from cleave.schemas import Chunk, ChunkParams, ChunkUnit, ChunkerType, Document,
 
 # ────────────────────────────────────────────────────── Code ──────────────────────────────────────────────────────── #
 
-# TODO: Implement ContentType into the chunkers.
-
 class FixedChunker(BaseChunker):
 
     _CHUNKER_TYPE = ChunkerType.fixed
@@ -35,18 +33,10 @@ class FixedChunker(BaseChunker):
         global_index = 0
 
         for page in document.pages:
-            page_text = page.text
-
-            if not page_text.strip():
-                continue
-
-            page_chunks = self._chunk_text(text=page_text,
-                                           page_number=page.page_number,
-                                           source=document.source,
-                                           start_index=global_index)
+            page_chunks = self._chunk_page(page=page, source=document.source, start_index=global_index)
             chunks.extend(page_chunks)
             global_index += len(page_chunks)
-        
+
         return chunks
 
     def _chunk_text(
@@ -77,29 +67,23 @@ class FixedChunker(BaseChunker):
         chunks: List[Chunk] = []
 
         if self.chunk_params.unit == ChunkUnit.tokens:
-            # Token implementation requires encoding text to find window
             tokens = self.token_enc.encode(text)
             total_token_len = len(tokens)
-            char_start = 0
 
             for i in range(0, total_token_len, step):
                 window = tokens[i: i + size]
                 chunk_text = self.token_enc.decode(window)
-                # Always search forward from previous char_start
-                char_start = text.find(chunk_text, char_start)
-                # No occurence
-                if char_start == -1:
-                    char_start = 0
-                
-                chunks.append(self.make_chunk(text=chunk_text,
-                                              source=source,
-                                              page_number=page_number,
-                                              index=start_index + len(chunks),
-                                              char_start=char_start)
-                                              )
-                # advance past this chunk's start so next find() searches forward
-                char_start += 1                
-                # Prevent empty iteration
+                # Derive char_start by decoding all tokens before this window —
+                # avoids text.find() which fails when decode doesn't round-trip exactly.
+                char_start = len(self.token_enc.decode(tokens[:i]))
+
+                chunks.append(self.make_chunk(
+                    text=chunk_text,
+                    source=source,
+                    page_number=page_number,
+                    index=start_index + len(chunks),
+                    char_start=char_start,
+                ))
                 if i + size >= total_token_len:
                     break
 

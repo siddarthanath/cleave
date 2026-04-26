@@ -2,7 +2,7 @@
 
 # Private Library
 from cleave.chunker.fixed import FixedChunker
-from cleave.schemas import ChunkParams, ContentBlock, ContentType, DocumentPage, Document
+from cleave.schemas import ChunkParams, ChunkUnit, ContentBlock, ContentType, DocumentPage, Document
 
 # ────────────────────────────────────────────────────── Code ──────────────────────────────────────────────────────── #
 
@@ -97,6 +97,45 @@ class TestFixedChunkerCharacters:
         doc = _doc(source, "hello world this is a test sentence for chunking")
         for chunk in chunker.chunk(doc):
             assert chunk.content_type == ContentType.text
+
+
+class TestFixedChunkerMixedContent:
+    def test_table_block_produces_table_chunk(self, source, char_params, mixed_content_document):
+        chunker = FixedChunker(char_params)
+        chunks = chunker.chunk(mixed_content_document)
+        content_types = [c.content_type for c in chunks]
+        assert ContentType.table in content_types
+
+    def test_image_block_produces_image_chunk(self, source, char_params, mixed_content_document):
+        chunker = FixedChunker(char_params)
+        chunks = chunker.chunk(mixed_content_document)
+        content_types = [c.content_type for c in chunks]
+        assert ContentType.image in content_types
+
+    def test_text_blocks_still_chunked(self, source, char_params, mixed_content_document):
+        chunker = FixedChunker(char_params)
+        chunks = chunker.chunk(mixed_content_document)
+        assert any(c.content_type == ContentType.text for c in chunks)
+
+    def test_table_chunk_text_matches_block_content(self, source, char_params, mixed_content_document):
+        chunker = FixedChunker(char_params)
+        chunks = chunker.chunk(mixed_content_document)
+        table_chunks = [c for c in chunks if c.content_type == ContentType.table]
+        assert len(table_chunks) == 1
+        assert table_chunks[0].text == "| A | B |\n|---|---|\n| 1 | 2 |"
+
+    def test_image_chunk_text_matches_block_content(self, source, char_params, mixed_content_document):
+        chunker = FixedChunker(char_params)
+        chunks = chunker.chunk(mixed_content_document)
+        image_chunks = [c for c in chunks if c.content_type == ContentType.image]
+        assert len(image_chunks) == 1
+        assert image_chunks[0].text == "base64encodeddata"
+
+    def test_global_index_sequential_mixed(self, source, char_params, mixed_content_document):
+        chunker = FixedChunker(char_params)
+        chunks = chunker.chunk(mixed_content_document)
+        for i, chunk in enumerate(chunks):
+            assert chunk.index == i
 
 
 class TestFixedChunkerTokens:

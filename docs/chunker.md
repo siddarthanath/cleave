@@ -1,158 +1,193 @@
-# Chunker
+# Cleave Chunkers
 
-## Setup
+## Class Diagram
 
-Install the core package (tiktoken is included as a base dependency):
-
-```bash
-pip install cleave
+```
+BaseChunker (ABC)
+├── FixedChunker       (ChunkerType.fixed)
+├── SentenceChunker    (ChunkerType.sentence)
+└── RecursiveChunker   (ChunkerType.recursive)
 ```
 
-To use a specific chunker:
+`BaseChunker` owns tiktoken token counting, `make_chunk`, `_chunk_page`, and `_measure`. Subclasses implement `chunk()` and `_chunk_text()`.
+
+---
+
+## Chunking Strategies
+
+| Strategy | Class | Flat | Tree | Best for |
+|----------|-------|------|------|----------|
+| `fixed` | `FixedChunker` | ✓ | via bridge | Uniform retrieval, token-budget control |
+| `sentence` | `SentenceChunker` | ✓ | via bridge | Prose documents where sentence boundaries matter |
+| `recursive` | `RecursiveChunker` | ✓ | ✓ native | Structured documents with headings and mixed content |
+
+---
+
+## Chunk Params
 
 ```python
-# Imports
+from cleave.schemas import ChunkParams, ChunkUnit
+
+# Character mode (default)
+params = ChunkParams(chunk_size=500, chunk_overlap=50)
+
+# Token mode
+params = ChunkParams(chunk_size=128, chunk_overlap=16, unit=ChunkUnit.tokens)
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `chunk_size` | `int` | Maximum chunk length in the configured unit |
+| `chunk_overlap` | `int` | Overlap shared between adjacent chunks (`>= 0`, must be `< chunk_size`) |
+| `unit` | `ChunkUnit` | `characters` (default) or `tokens` (tiktoken `cl100k_base`) |
+
+---
+
+## Basic Usage
+
+```python
+from cleave.parsers.factory import ParserFactory
 from cleave.chunker.factory import ChunkerFactory
-from cleave.schemas import ChunkerType, ChunkParams, ChunkUnit
-# Arrange
-params = ChunkParams(chunk_size=200, chunk_overlap=20)
-chunker = ChunkerFactory.create(ChunkerType.fixed, params)
-# Act
-chunks = chunker.chunk(document)
-```
 
-`chunk_size` and `chunk_overlap` are in **characters** by default. Pass `unit=ChunkUnit.tokens` to measure in tokens (uses tiktoken `cl100k_base`).
+doc    = ParserFactory.create("paper.pdf").parse()
+chunks = ChunkerFactory.create("fixed", chunk_size=500, chunk_overlap=50).chunk(doc)
 
----
-
-## Architecture
-
-```mermaid
-classDiagram
-    class ChunkerFactory {
-        +_CHUNKER_REGISTRY : Dict
-        +create(chunk_type, chunk_params) BaseChunker$
-    }
-
-    class BaseChunker {
-        <<abstract>>
-        +chunk_params : ChunkParams
-        +token_enc : Encoding
-        +chunk(document) List~Chunk~*
-        +make_chunk(text, source, page_number, index, char_start, content_type) Chunk
-        #_measure(text) int
-        #_count_tokens(text) int
-        #_make_text_chunk(...)  Chunk
-        #_make_table_chunk(...) Chunk
-        #_make_image_chunk(...) Chunk
-    }
-
-    class FixedChunker {
-        +chunk(document) List~Chunk~
-        -_chunk_text(text, page_number, source, start_index) List~Chunk~
-    }
-
-    class ChunkParams {
-        +chunk_size : int
-        +chunk_overlap : int
-        +unit : ChunkUnit
-    }
-
-    class Chunk {
-        +text : str
-        +source : Source
-        +page_number : int
-        +content_type : ContentType
-        +index : int
-        +token_count : int
-        +char_start : int
-        +char_end : int
-    }
-
-    class ChunkUnit {
-        <<enumeration>>
-        characters
-        tokens
-    }
-
-    class ChunkerType {
-        <<enumeration>>
-        fixed
-        recursive
-    }
-
-    ChunkerFactory ..> BaseChunker : creates
-    ChunkerFactory ..> ChunkerType : keyed by
-    BaseChunker <|-- FixedChunker
-    BaseChunker --> ChunkParams : uses
-    BaseChunker ..> Chunk : produces
-    ChunkParams --> ChunkUnit : unit
+for c in chunks:
+    print(f"[{c.index}] type={c.content_type.value}  tokens={c.token_count}  {c.text[:60]!r}")
 ```
 
 ---
 
-## How Each Chunker Works
+## Content Type Handling
 
-### FixedChunker
+All chunkers handle mixed-content pages. Text blocks are split by the chunker's strategy; table and image blocks are always emitted as single atomic chunks in their natural position order.
 
-Splits text into **fixed-size, overlapping windows**. The window slides forward by `step = chunk_size - chunk_overlap` each iteration. The two modes share the same algorithm — they only differ in what the window slides over.
+| Content type | FixedChunker | SentenceChunker | RecursiveChunker |
+|---|---|---|---|
+| `text` | Split by fixed window | Split at sentence boundaries | Split by delimiter hierarchy |
+| `table` | Single chunk | Single chunk | Single chunk (atomicity rule) |
+| `image` | Single chunk | Single chunk | Single chunk (atomicity rule) |
 
-```mermaid
-flowchart TD
-    A([Document]) --> B[For each page]
-    B --> C{page.text blank?}
-    C -- yes --> B
-    C -- no --> D["i = 0"]
+`token_count` is `0` for image chunks — base64 data has no meaningful token count.
 
-    D --> E{unit?}
-    E -- characters --> F["window = text[i : i+size]\nchar_start = i"]
-    E -- tokens --> G["tokens = encode(text)\nwindow = tokens[i : i+size]\nchunk_text = decode(window)\nchar_start = text.find(chunk_text)"]
+---
 
-    F --> H["make_chunk(chunk_text, char_start)"]
-    G --> H
+## FixedChunker
 
-    H --> I{"i + size >= len(sequence)?"}
-    I -- yes --> J([done])
-    I -- no --> K["i += step"]
-    K --> E
+Slides a fixed-size window over each page's text with a fixed step (`chunk_size - chunk_overlap`).
+
+```
+text:  [──────────window──────────]
+                [──────overlap──][──────window──────────]
+```
+
+### Character mode
+
+```python
+chunker = ChunkerFactory.create("fixed", chunk_size=200, chunk_overlap=20)
+```
+
+### Token mode
+
+Encodes to tiktoken tokens, slides the window over the token list, decodes each window back to a string. More precise for LLM context limits.
+
+```python
+chunker = ChunkerFactory.create("fixed", chunk_size=128, chunk_overlap=16, unit="tokens")
 ```
 
 ---
 
-#### Character mode example — `chunk_size=10, chunk_overlap=3, step=7`
+## SentenceChunker
 
-Window slides over the raw string. Every character, including spaces, counts.
+Accumulates text until `chunk_size` is reached at a sentence boundary (`.`, `!`, `?`). Cross-page sentences are carried over via `spare_text`.
 
 ```
-text:    The quick brown fox jumps
-char:    0123456789012345678901234  (mod 10)
-
-chunk 0: [The quick ]                   i=0,  text[0:10]
-chunk 1:        [ck brown f]            i=7,  text[7:17]
-chunk 2:               [n fox jump]     i=14, text[14:24]
-chunk 3:                      [umps]    i=21, text[21:25]
+text:  First sentence. Second sentence. Third sentence!
+       [──── accumulate ────][commit at boundary][──next──]
 ```
 
-Each space counts as a character. The 3-character overlap between adjacent chunks:
-- chunk 0 / chunk 1: `"ck "` (chars 7–9)
-- chunk 1 / chunk 2: `"n f"` (chars 14–16)
-- chunk 2 / chunk 3: `"ump"` (chars 21–23)
+- Sentence trimming is applied at **page boundaries only** — within-page text flushes (triggered by table/image blocks) do not trim.
+- Overlap is applied in the configured unit (character slice or token decode).
 
 ---
 
-#### Token mode example — `chunk_size=5, chunk_overlap=2, step=3`
+## RecursiveChunker
 
-Text is encoded to token IDs once; the window slides over that list and each window is decoded back to a string. `char_start` is then located by searching the original text.
+Dual-path chunker that adapts to document structure.
+
+### Tree path (`document.root`)
+
+Walks the `TreeNode` hierarchy. Nodes whose full text fits within `chunk_size` are emitted as one chunk. Oversized nodes are recursed into; oversized leaf nodes fall back to string splitting.
 
 ```
-text:    "hello world is a different era"
-tokens:  [ 15339 ][ 1917 ][  374 ][  264 ][ 2204 ][ 4325 ][ 11639]
-decoded:   hello    world    is      a      diff-   -er-    -ent era
-
-chunk 0: [ 15339  1917  374  264  2204 ]  → "hello world is a diff"    i=0
-chunk 1:                [ 264  2204  4325  11639 ... ]  → "a different era"  i=3
+root
+ └─ heading[H1]  → fits → single chunk
+     └─ heading[H2] → too large → recurse
+         └─ paragraph → fits → single chunk
+         └─ table     → atomic → single chunk
 ```
 
-The overlap (2 tokens) is shared in decoded text - context at boundaries is preserved without re-running the full encode.
+### Flat path (`document.pages`)
+
+Applies a delimiter hierarchy over each page's text, grouping pieces greedily:
+
+```
+Delimiters (priority order):
+  "\n# "  →  "\n## "  →  "\n### "  →  "\n\n"  →  "\n"  →  " "
+```
+
+Falls back to a fixed-size sliding window only when a single piece cannot be reduced further.
+
+### Bridge — flat chunkers on tree documents
+
+Pass a tree document through `to_markdown()` to use `FixedChunker` or `SentenceChunker` while preserving heading structure:
+
+```python
+doc       = ParserFactory.create("report.pdf", mode="tree").parse()
+md_string = doc.to_markdown()
+
+# Wrap in a synthetic flat Document
+from cleave.schemas import ContentBlock, ContentType, Document, DocumentPage, Source, SourceType
+flat_doc = Document(
+    source=doc.source,
+    pages=[DocumentPage(page_number=None, blocks=[
+        ContentBlock(type=ContentType.text, content=md_string, position=0)
+    ])],
+    total_pages=1,
+)
+chunks = ChunkerFactory.create("sentence", chunk_size=300, chunk_overlap=30).chunk(flat_doc)
+```
 
 ---
+
+## Chunk Schema
+
+```python
+from cleave.schemas import Chunk
+
+chunk.chunk_id      # str  — 16-char SHA-256 hex of "{source.location}:{index}" (deterministic)
+chunk.text          # str  — chunk text content
+chunk.source        # Source
+chunk.page_number   # int | None
+chunk.content_type  # ContentType (text / table / image)
+chunk.index         # int  — 0-based global position
+chunk.token_count   # int  — tiktoken cl100k_base (0 for images)
+chunk.char_start    # int  — start offset within page text
+chunk.char_end      # int  — end offset within page text
+```
+
+`chunk_id` is computed automatically by a `model_validator` — callers never need to set it.
+
+---
+
+## Factory
+
+```python
+from cleave.chunker.factory import ChunkerFactory
+
+chunker = ChunkerFactory.create("fixed",     chunk_size=200, chunk_overlap=20)
+chunker = ChunkerFactory.create("sentence",  chunk_size=300, chunk_overlap=30)
+chunker = ChunkerFactory.create("recursive", chunk_size=512, chunk_overlap=64)
+```
+
+`ChunkerFactory._CHUNKER_REGISTRY` maps strategy name → chunker class. Add new chunkers there.

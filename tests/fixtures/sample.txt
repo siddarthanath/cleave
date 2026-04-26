@@ -1,0 +1,13 @@
+Sample Document
+
+Introduction
+
+This is the introduction paragraph.
+
+Data Overview
+
+This section covers data. Name: Alpha, Value: 1. Name: Beta, Value: 2.
+
+Conclusion
+
+Final remarks go here.

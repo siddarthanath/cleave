@@ -22,7 +22,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-pdf = ["pymupdf"]
+pdf = ["pymupdf", "pymupdf-layout"]
 docx = ["python-docx"]
 pptx = ["python-pptx"]
 html = ["beautifulsoup4", "httpx"]
@@ -36,6 +36,7 @@ google = ["google-genai"]
 dev = ["pytest>=7.0", "pytest-cov", "pytest-asyncio"]
 all = [
     "pymupdf",
+    "pymupdf-layout",
     "python-docx",
     "python-pptx",
     "beautifulsoup4",

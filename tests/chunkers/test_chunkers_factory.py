@@ -16,19 +16,14 @@ class TestChunkerFactoryRegistry:
     def test_recursive_type_in_registry(self):
         assert ChunkerType.recursive in ChunkerFactory._CHUNKER_REGISTRY
 
-    def test_unsupported_type_raises_value_error(self, char_params):
-        with pytest.raises(ValueError, match="Unsupported chunker"):
-            ChunkerFactory.create(ChunkerType.sentence, char_params)
+    def test_fixed_type_creates_chunker(self, char_params):
+        from cleave.chunker.fixed import FixedChunker
+        assert isinstance(ChunkerFactory.create(ChunkerType.fixed, char_params), FixedChunker)
 
-    def test_semantic_type_raises_value_error(self, char_params):
-        with pytest.raises(ValueError, match="Unsupported chunker"):
-            ChunkerFactory.create(ChunkerType.semantic, char_params)
+    def test_sentence_type_creates_chunker(self, char_params):
+        from cleave.chunker.sentence import SentenceChunker
+        assert isinstance(ChunkerFactory.create(ChunkerType.sentence, char_params), SentenceChunker)
 
-    def test_fixed_type_in_registry_not_yet_wired(self, char_params):
-        # Registry maps ChunkerType.fixed to Ellipsis until real chunker is wired up.
-        with pytest.raises(TypeError):
-            ChunkerFactory.create(ChunkerType.fixed, char_params)
-
-    def test_recursive_type_in_registry_not_yet_wired(self, char_params):
-        with pytest.raises(TypeError):
-            ChunkerFactory.create(ChunkerType.recursive, char_params)
+    def test_recursive_type_creates_chunker(self, char_params):
+        from cleave.chunker.recursive import RecursiveChunker
+        assert isinstance(ChunkerFactory.create(ChunkerType.recursive, char_params), RecursiveChunker)

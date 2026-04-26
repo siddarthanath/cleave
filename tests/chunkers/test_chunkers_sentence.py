@@ -52,13 +52,13 @@ class TestSentenceChunkerCharacters:
         chunks = chunker.chunk(doc)
         assert len(chunks) >= 1
 
-    def test_text_with_no_punctuation_yields_no_chunks(self, source):
-        # No punctuation means _chunk_text finds no split points and current_text stays empty
+    def test_text_with_no_punctuation_falls_back_to_fixed(self, source):
         params = ChunkParams(chunk_size=200, chunk_overlap=10)
         chunker = SentenceChunker(params)
         doc = _doc(source, "no punctuation here at all")
         chunks = chunker.chunk(doc)
-        assert len(chunks) == 0
+        assert len(chunks) == 1
+        assert chunks[0].text == "no punctuation here at all"
 
     def test_global_index_sequential(self, source):
         params = ChunkParams(chunk_size=30, chunk_overlap=5)
@@ -164,6 +164,43 @@ class TestSentenceChunkerCharacters:
         )
         chunks = chunker.chunk(_doc(source, text))
         assert len(chunks) >= 1
+
+class TestSentenceChunkerMixedContent:
+    def test_table_block_produces_table_chunk(self, source, mixed_content_document):
+        chunker = SentenceChunker(ChunkParams(chunk_size=200, chunk_overlap=10))
+        chunks = chunker.chunk(mixed_content_document)
+        assert any(c.content_type == ContentType.table for c in chunks)
+
+    def test_image_block_produces_image_chunk(self, source, mixed_content_document):
+        chunker = SentenceChunker(ChunkParams(chunk_size=200, chunk_overlap=10))
+        chunks = chunker.chunk(mixed_content_document)
+        assert any(c.content_type == ContentType.image for c in chunks)
+
+    def test_text_blocks_still_chunked(self, source, mixed_content_document):
+        chunker = SentenceChunker(ChunkParams(chunk_size=200, chunk_overlap=10))
+        chunks = chunker.chunk(mixed_content_document)
+        assert any(c.content_type == ContentType.text for c in chunks)
+
+    def test_table_chunk_text_matches_block_content(self, source, mixed_content_document):
+        chunker = SentenceChunker(ChunkParams(chunk_size=200, chunk_overlap=10))
+        chunks = chunker.chunk(mixed_content_document)
+        table_chunks = [c for c in chunks if c.content_type == ContentType.table]
+        assert len(table_chunks) == 1
+        assert table_chunks[0].text == "| A | B |\n|---|---|\n| 1 | 2 |"
+
+    def test_image_chunk_text_matches_block_content(self, source, mixed_content_document):
+        chunker = SentenceChunker(ChunkParams(chunk_size=200, chunk_overlap=10))
+        chunks = chunker.chunk(mixed_content_document)
+        image_chunks = [c for c in chunks if c.content_type == ContentType.image]
+        assert len(image_chunks) == 1
+        assert image_chunks[0].text == "base64encodeddata"
+
+    def test_global_index_sequential_mixed(self, source, mixed_content_document):
+        chunker = SentenceChunker(ChunkParams(chunk_size=200, chunk_overlap=10))
+        chunks = chunker.chunk(mixed_content_document)
+        for i, chunk in enumerate(chunks):
+            assert chunk.index == i
+
 
 class TestSentenceChunkerTokens:
     def test_produces_chunks_in_token_mode(self, source, token_params):
