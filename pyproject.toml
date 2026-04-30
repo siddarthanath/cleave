@@ -33,6 +33,7 @@ pinecone = ["pinecone-client"]
 openai = ["openai"]
 anthropic = ["anthropic"]
 google = ["google-genai"]
+code = ["tree-sitter>=0.22", "tree-sitter-python"]
 dev = ["pytest>=7.0", "pytest-cov", "pytest-asyncio"]
 all = [
     "pymupdf",
@@ -48,6 +49,8 @@ all = [
     "openai",
     "anthropic",
     "google-genai",
+    "tree-sitter>=0.22",
+    "tree-sitter-python",
 ]
 
 [project.scripts]

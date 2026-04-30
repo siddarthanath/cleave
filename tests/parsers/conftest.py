@@ -19,6 +19,7 @@ _FIXTURE_SPECS = [
     ("sample.md",   "tests.fixtures.md",   "create_sample_md"),
     ("sample.txt",  "tests.fixtures.txt",  "create_sample_txt"),
     ("sample.html", "tests.fixtures.html", "create_sample_html"),
+    ("sample.py",   "tests.fixtures.py",   "create_sample_py"),
 ]
 
 
@@ -66,3 +67,9 @@ def sample_txt_path() -> Path:
 def sample_html_path() -> Path:
     """Absolute path to the generated sample HTML fixture."""
     return _FIXTURES_DIR / "sample.html"
+
+
+@pytest.fixture(scope="session")
+def sample_py_path() -> Path:
+    """Absolute path to the generated sample Python fixture."""
+    return _FIXTURES_DIR / "sample.py"

@@ -12,6 +12,7 @@ from cleave.parsers.office.pdf import PdfParser
 from cleave.parsers.markup.md import MarkdownParser
 from cleave.parsers.markup.html import HtmlParser
 from cleave.parsers.plain.txt import TextParser
+from cleave.parsers.code.py import PythonParser
 from cleave.utils.file import get_path_and_extension
 
 # ────────────────────────────────────────────────────── Code ──────────────────────────────────────────────────────── #
@@ -26,6 +27,7 @@ class ParserFactory:
         ".md":   MarkdownParser,
         ".html": HtmlParser,
         ".htm":  HtmlParser,
+        ".py":   PythonParser,
     }
 
     @classmethod

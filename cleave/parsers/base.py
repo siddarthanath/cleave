@@ -22,6 +22,7 @@ _EXTENSION_MAP = {
     ".htm":  SourceType.html,
     ".md":   SourceType.markdown,
     ".txt":  SourceType.txt,
+    ".py":   SourceType.python,
 }
 
 

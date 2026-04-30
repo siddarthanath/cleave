@@ -15,16 +15,19 @@ class ContentType(str, Enum):
     text  = "text"
     image = "image"
     table = "table"
+    # Separate from text so stores/retrievers can distinguish prose from source code
+    code  = "code"
 
 
 class ContentBlock(BaseModel):
-    type: ContentType = Field(description="Type of content: text, image, or table.")
+    type: ContentType = Field(description="Type of content: text, image, table, or code.")
     content: str = Field(
         description=(
             "The content payload. "
             "text  → raw string. "
             "image → base64-encoded bytes as string. "
-            "table → markdown-formatted table string."
+            "table → markdown-formatted table string. "
+            "code  → raw source code string."
         ),
         min_length=1,
     )

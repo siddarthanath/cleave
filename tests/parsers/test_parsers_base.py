@@ -13,7 +13,7 @@ from cleave.schemas import SourceType
 
 class TestExtensionMap:
     def test_has_all_supported_extensions(self):
-        expected = {".pdf", ".docx", ".pptx", ".html", ".htm", ".md", ".txt"}
+        expected = {".pdf", ".docx", ".pptx", ".html", ".htm", ".md", ".txt", ".py"}
         assert expected == set(_EXTENSION_MAP.keys())
 
     def test_correct_source_types(self):
@@ -24,6 +24,7 @@ class TestExtensionMap:
         assert _EXTENSION_MAP[".htm"] == SourceType.html
         assert _EXTENSION_MAP[".md"] == SourceType.markdown
         assert _EXTENSION_MAP[".txt"] == SourceType.txt
+        assert _EXTENSION_MAP[".py"] == SourceType.python
 
     def test_htm_and_html_map_to_same_type(self):
         assert _EXTENSION_MAP[".htm"] == _EXTENSION_MAP[".html"]

@@ -57,6 +57,10 @@ class Document(BaseModel):
         description="Root of the semantic tree. Populated for tree documents.",
         default=None,
     )
+    parser_version: Optional[str] = Field(
+        description="Version string of the parser that produced this document. Used for cache invalidation.",
+        default=None,
+    )
 
     @model_validator(mode="after")
     def _validate_structure(self) -> "Document":

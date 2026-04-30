@@ -1,5 +1,9 @@
 # Cleave ✂️
 
+<p align="center">
+  <img src="docs/cleave.png" width="400" />
+</p>
+
 > A minimal unified Python pipeline for document parsing, chunking, embedding and retrieval.
 
 One document in. Embedding-ready chunks out. Swap parsers, chunkers, embedders and stores without touching your application code.
@@ -54,7 +58,7 @@ print(document.all_images)       # extracted image blocks
 print(document.all_tables)       # extracted table blocks
 ```
 
-Supported formats: `.pdf`, `.docx`, `.md`, `.txt`.
+Supported formats: `.pdf` (text, images, tables), `.docx` (text, images, tables), `.md` (text, images, tables), `.html` / URLs (text), `.txt` (text), `.py` (text).
 
 #### Parsing modes
 
@@ -78,6 +82,11 @@ The `to_markdown()` bridge serialises a tree document back into a plain Markdown
 
 - **bridge** → text pipeline (chunking, retrieval)
 - **tree** → multimodal pipeline (vision embeddings, image extraction)
+
+> **Note - Code Parsing:** `.py` files (and future languages) are parsed using [TreeSitter](https://tree-sitter.github.io/tree-sitter/), a concrete syntax tree parser. Both `flat` and `tree` modes work identically to all other parsers via `ParserFactory`. The difference is what _tree_ means: 
+- For documents (PDF, DOCX, Markdown) the hierarchy is built from heading heuristics.
+- For code it mirrors the real syntax — `module → class → method`. 
+The output is the same `TreeNode` schema either way.
 
 ### 2. Chunk (Transformation Phase)
 
