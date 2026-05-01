@@ -1,12 +1,5 @@
 # ✂️ Cleave 
 
-<picture>
-  <!-- If the user prefers dark mode, show this -->
-  <source srcset="docs/images/cleave-dark.png" media="(prefers-color-scheme: dark)">
-  <!-- Default to the light mode version -->
-  <img src="docs/images/cleave-light.png" alt="Cleave Logo">
-</picture>
-
 > A minimal unified Python pipeline for document parsing, chunking, embedding and retrieval.
 
 One document in. Embedding-ready chunks out. Swap parsers, chunkers, embedders and stores without touching your application code.
