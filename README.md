@@ -1,8 +1,11 @@
 # ✂️ Cleave 
 
-<p align="center">
-  <img src="docs/cleave.png" width="400" />
-</p>
+<picture>
+  <!-- If the user prefers dark mode, show this -->
+  <source srcset="docs/images/cleave-dark.png" media="(prefers-color-scheme: dark)">
+  <!-- Default to the light mode version -->
+  <img src="docs/images/cleave-light.png" alt="Cleave Logo">
+</picture>
 
 > A minimal unified Python pipeline for document parsing, chunking, embedding and retrieval.
 
