@@ -1,4 +1,4 @@
-# Cleave ✂️
+# ✂️ Cleave 
 
 <p align="center">
   <img src="docs/cleave.png" width="400" />
