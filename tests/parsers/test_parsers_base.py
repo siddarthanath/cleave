@@ -13,7 +13,7 @@ from cleave.schemas import SourceType
 
 class TestExtensionMap:
     def test_has_all_supported_extensions(self):
-        expected = {".pdf", ".docx", ".pptx", ".html", ".htm", ".md", ".txt"}
+        expected = {".pdf", ".docx", ".pptx", ".html", ".htm", ".md", ".txt", ".py"}
         assert expected == set(_EXTENSION_MAP.keys())
 
     def test_correct_source_types(self):
@@ -24,6 +24,7 @@ class TestExtensionMap:
         assert _EXTENSION_MAP[".htm"] == SourceType.html
         assert _EXTENSION_MAP[".md"] == SourceType.markdown
         assert _EXTENSION_MAP[".txt"] == SourceType.txt
+        assert _EXTENSION_MAP[".py"] == SourceType.python
 
     def test_htm_and_html_map_to_same_type(self):
         assert _EXTENSION_MAP[".htm"] == _EXTENSION_MAP[".html"]
@@ -31,7 +32,7 @@ class TestExtensionMap:
 class TestMakeUrlSource:
     def test_type_is_url(self):
         source = BaseParser._make_url_source("https://example.com/page")
-        assert source.type == SourceType.url
+        assert source.source_type == SourceType.url
 
     def test_name_is_netloc(self):
         source = BaseParser._make_url_source("https://example.com/page")
@@ -44,7 +45,7 @@ class TestMakeUrlSource:
 
     def test_http_scheme(self):
         source = BaseParser._make_url_source("http://docs.python.org")
-        assert source.type == SourceType.url
+        assert source.source_type == SourceType.url
         assert source.name == "docs.python.org"
 
     def test_subdomain_preserved_in_name(self):
@@ -62,7 +63,7 @@ class TestMakeSource:
         fake = tmp_path / "report.pdf"
         fake.touch()
         source = BaseParser._make_source(str(fake))
-        assert source.type == SourceType.pdf
+        assert source.source_type == SourceType.pdf
 
     def test_name_is_filename(self, tmp_path):
         fake = tmp_path / "report.pdf"
@@ -80,10 +81,10 @@ class TestMakeSource:
         fake = tmp_path / "presentation.docx"
         fake.touch()
         source = BaseParser._make_source(str(fake))
-        assert source.type == SourceType.docx
+        assert source.source_type == SourceType.docx
 
     def test_markdown(self, tmp_path):
         fake = tmp_path / "notes.md"
         fake.touch()
         source = BaseParser._make_source(str(fake))
-        assert source.type == SourceType.markdown
+        assert source.source_type == SourceType.markdown
